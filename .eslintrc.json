@@ -1,0 +1,10 @@
+{
+  "extends": "@lukemorales",
+  "rules": {
+    "import/no-extraneous-dependencies": ["error", {
+      "devDependencies": [
+        "*.config.ts"
+      ]
+    }]
+  }
+}
