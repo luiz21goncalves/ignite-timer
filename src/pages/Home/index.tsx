@@ -12,7 +12,13 @@ export function Home() {
             id="task"
             type="text"
             placeholder="Dê um nome para seu projeto"
+            list="task-suggestions"
           />
+
+          <datalist id="task-suggestions">
+            <option value="Banana" />
+            <option value="Nanica" />
+          </datalist>
 
           <label htmlFor="minutesAmount">durante</label>
           <S.MinutesAmountInput
