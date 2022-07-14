@@ -81,6 +81,12 @@ export function Home() {
   const formatedMinutes = String(minutesAmount).padStart(2, '0')
   const formatedSeconds = String(secondsAmount).padStart(2, '0')
 
+  useEffect(() => {
+    if (activeCycle) {
+      document.title = `${formatedMinutes}:${formatedSeconds} - ${activeCycle.task}`
+    }
+  }, [formatedMinutes, formatedSeconds, activeCycle])
+
   const taskValue = watch('task')
   const isSubmitDisabled = !taskValue
 
