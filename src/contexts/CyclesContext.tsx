@@ -3,6 +3,7 @@ import {
   ReactNode,
   useCallback,
   useContext,
+  useMemo,
   useState,
 } from 'react'
 
@@ -46,7 +47,10 @@ function CyclesContextProvider(props: CyclesContextProviderProps) {
   )
   const [amountSecondsPassed, setAmountSecondsPassed] = useState(0)
 
-  const activeCycle = cycles.find((findCycle) => findCycle.id === activeCycleId)
+  const activeCycle = useMemo(
+    () => cycles.find((findCycle) => findCycle.id === activeCycleId),
+    [activeCycleId, cycles],
+  )
 
   const markCurrentCycleAsFinished = useCallback(() => {
     setCycles((prevState) =>
