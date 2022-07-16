@@ -25,6 +25,8 @@ export function Countdown() {
   useEffect(() => {
     if (activeCycle) {
       document.title = `${formatedMinutes}:${formatedSeconds} - ${activeCycle.task}`
+    } else {
+      document.title = 'Ignite Timer'
     }
   }, [formatedMinutes, formatedSeconds, activeCycle])
 
