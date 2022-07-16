@@ -1,4 +1,8 @@
+import formatDistanceToNow from 'date-fns/formatDistanceToNow'
+import ptBR from 'date-fns/locale/pt-BR'
+
 import { useCycles } from '../../contexts/CyclesContext'
+
 import * as S from './styles'
 
 export function History() {
@@ -24,7 +28,12 @@ export function History() {
               <tr key={cycle.id}>
                 <td>{cycle.task}</td>
                 <td>{cycle.minutesAmount} minutes</td>
-                <td>{cycle.startDate.toISOString()}</td>
+                <td>
+                  {formatDistanceToNow(cycle.startDate, {
+                    addSuffix: true,
+                    locale: ptBR,
+                  })}
+                </td>
                 <td>
                   {cycle.finishedDate && (
                     <S.Status statusColor="green">Concluído</S.Status>
