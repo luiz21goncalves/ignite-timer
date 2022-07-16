@@ -4,6 +4,7 @@ import {
   useCallback,
   useContext,
   useMemo,
+  useReducer,
   useState,
 } from 'react'
 
@@ -24,7 +25,7 @@ type Cycle = {
 type CyclesContextData = {
   cycles: Cycle[]
   activeCycle: Cycle | undefined
-  activeCycleId: string | undefined
+  activeCycleId: string | null
   amountSecondsPassed: number
   markCurrentCycleAsFinished: () => void
   setSecondsPassed: (seconds: number) => void
@@ -36,16 +37,65 @@ type CyclesContextProviderProps = {
   children: ReactNode
 }
 
+type CyclesState = {
+  cycles: Cycle[]
+  activeCycleId: string | null
+}
+
 const CyclesContext = createContext({} as CyclesContextData)
 
 function CyclesContextProvider(props: CyclesContextProviderProps) {
   const { children } = props
 
-  const [cycles, setCycles] = useState<Cycle[]>([])
-  const [activeCycleId, setActiveCycleId] = useState<string | undefined>(
-    undefined,
+  const [cyclesState, dispatch] = useReducer(
+    (state: CyclesState, action: any) => {
+      switch (action.type) {
+        case 'ADD_NEW_CYCLE':
+          return {
+            ...state,
+            cycles: [...state.cycles, action.payload.newCycle],
+            activeCycleId: action.payload.newCycle.id,
+          }
+
+        case 'INTERRUPT_CURRENT_CYCLE':
+          return {
+            ...state,
+            cycles: state.cycles.map((cycle) => {
+              if (cycle.id === state.activeCycleId) {
+                return { ...cycle, interruptedDate: new Date() }
+              }
+
+              return cycle
+            }),
+            activeCycleId: null,
+          }
+
+        case 'MARK_CURRENT_CYCLE_AS_FINISHED':
+          return {
+            ...state,
+            cycles: state.cycles.map((cycle) => {
+              if (cycle.id === state.activeCycleId) {
+                return { ...cycle, finishedDate: new Date() }
+              }
+
+              return cycle
+            }),
+            activeCycleId: null,
+          }
+
+        default:
+          return state
+      }
+    },
+    {
+      activeCycleId: null,
+      cycles: [],
+    } as CyclesState,
   )
+
   const [amountSecondsPassed, setAmountSecondsPassed] = useState(0)
+
+  const { activeCycleId, cycles } = cyclesState
 
   const activeCycle = useMemo(
     () => cycles.find((findCycle) => findCycle.id === activeCycleId),
@@ -53,17 +103,10 @@ function CyclesContextProvider(props: CyclesContextProviderProps) {
   )
 
   const markCurrentCycleAsFinished = useCallback(() => {
-    setCycles((prevState) =>
-      prevState.map((cycle) => {
-        if (cycle.id === activeCycleId) {
-          return { ...cycle, finishedDate: new Date() }
-        }
-
-        return cycle
-      }),
-    )
-
-    setActiveCycleId(undefined)
+    dispatch({
+      type: 'MARK_CURRENT_CYCLE_AS_FINISHED',
+      payload: { activeCycleId },
+    })
   }, [activeCycleId])
 
   const setSecondsPassed = useCallback((seconds: number) => {
@@ -80,23 +123,16 @@ function CyclesContextProvider(props: CyclesContextProviderProps) {
       startDate: new Date(),
     }
 
-    setCycles((prevState) => [...prevState, newCycle])
-    setActiveCycleId(id)
+    dispatch({ type: 'ADD_NEW_CYCLE', payload: { newCycle } })
+
     setSecondsPassed(0)
   }
 
   function interruptCurrentCycle() {
-    setCycles((prevState) =>
-      prevState.map((cycle) => {
-        if (cycle.id === activeCycleId) {
-          return { ...cycle, interruptedDate: new Date() }
-        }
-
-        return cycle
-      }),
-    )
-
-    setActiveCycleId(undefined)
+    dispatch({
+      type: 'INTERRUPT_CURRENT_CYCLE',
+      payload: { activeCycleId },
+    })
   }
 
   return (
